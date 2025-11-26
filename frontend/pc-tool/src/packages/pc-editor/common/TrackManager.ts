@@ -264,9 +264,32 @@ export default class TrackManager {
         }
 
         const checkClassType = () => {
-            const aType = (trackObjects.find((item) => !!item) || [])[0]?.userData.classType;
-            const bType = (targetObjects.find((item) => !!item) || [])[0]?.userData.classType;
-            return aType === bType;
+            // Find first non-empty object from each track
+            const aObjects = trackObjects.find((item) => !!item && item.length > 0);
+            const bObjects = targetObjects.find((item) => !!item && item.length > 0);
+
+            // Both tracks must have at least one object
+            if (!aObjects || !bObjects) return false;
+
+            const aData = aObjects[0]?.userData;
+            const bData = bObjects[0]?.userData;
+
+            if (!aData || !bData) return false;
+
+            // Check ground truth class: className and classId must match
+            if (aData.className !== bData.className) return false;
+            if (aData.classId !== bData.classId) return false;
+
+            // Check classType (tool type: 3D_BOX, POLYGON, etc.)
+            if (aData.classType !== bData.classType) return false;
+
+            // Check predicted class (modelClass) if present on both objects
+            // This validates ML model predictions match
+            if (aData.modelClass && bData.modelClass) {
+                if (aData.modelClass !== bData.modelClass) return false;
+            }
+
+            return true;
         };
 
         if (!checkClassType()) {
@@ -280,11 +303,34 @@ export default class TrackManager {
         };
     }
     mergeTrackObject(trackId: string, targetTrackId: string) {
-        if (!trackId || !targetTrackId) return;
+        // Validate input parameters
+        if (!trackId || !targetTrackId) {
+            console.error('mergeTrackObject: trackId and targetTrackId are required');
+            return;
+        }
 
+        if (trackId === targetTrackId) {
+            console.error('mergeTrackObject: cannot merge track with itself');
+            return;
+        }
+
+        // Validate merge is allowed
+        const canMergeResult = this.canMerge(trackId, targetTrackId);
+        if (canMergeResult.code !== 'ok') {
+            console.error(`mergeTrackObject: merge validation failed with code: ${canMergeResult.code}`, canMergeResult.data);
+            return;
+        }
+
+        // Get target track info
         const trackObject = this.getTrackObject(targetTrackId);
+        if (!trackObject) {
+            console.error(`mergeTrackObject: target track ${targetTrackId} not found`);
+            return;
+        }
+
         const trackName = trackObject.trackName;
 
+        // Execute merge as a grouped command for proper undo/redo
         this.editor.cmdManager.withGroup(() => {
             this.setDataByTrackId(trackId, {
                 userData: {
@@ -295,6 +341,8 @@ export default class TrackManager {
 
             this.editor.cmdManager.execute('delete-track', trackId);
         });
+
+        // Select the merged track
         this.editor.selectByTrackId(targetTrackId);
     }
 

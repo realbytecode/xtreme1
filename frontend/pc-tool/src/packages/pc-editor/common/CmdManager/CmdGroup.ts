@@ -17,9 +17,12 @@ export default class CmdGroup extends CmdBase {
     }
     undo() {
         try {
-            this.cmds.forEach((e) => {
-                e.undo();
-            });
+            // Undo commands in REVERSE order
+            // When commands are grouped (e.g., merge: [UpdateData, DeleteTrack])
+            // Undo must reverse the order: DeleteTrack.undo() first, then UpdateData.undo()
+            for (let i = this.cmds.length - 1; i >= 0; i--) {
+                this.cmds[i].undo();
+            }
         } catch (error) {
             console.error(error);
         }

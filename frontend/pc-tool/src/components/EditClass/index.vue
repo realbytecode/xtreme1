@@ -42,6 +42,18 @@
                     </template>
                     <ObjectAttr :state="state" @change="onAttChange" @copy-from="copyAttrFrom" />
                 </a-collapse-panel>
+
+                <a-collapse-panel key="track-merge" v-if="!state.isBatch && state.trackId">
+                    <template #header="{ isActive }">
+                        <span class="item-header">
+                            <span class="title1">
+                                {{ $$('track-operations') }}
+                            </span>
+                        </span>
+                    </template>
+                    <TrackMerge :state="state" />
+                </a-collapse-panel>
+
                 <a-collapse-panel key="objects" v-if="TState.imgViews.length > 0">
                     <template #header="{ isActive }">
                         <span class="item-header">
@@ -79,6 +91,7 @@
     import ObjectItem from './ObjectItem.vue';
     import ObjectClass from './ObjectClass.vue';
     import ObjectAttr from './ObjectAttr.vue';
+    import TrackMerge from './TrackMerge.vue';
 
     import useUI from '../../hook/useUI';
     import useEditClass from './useEditClass';
