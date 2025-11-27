@@ -28,7 +28,13 @@ export default class ViewManager {
         this.editor = editor;
         this.handleWindowResize();
 
-        if (import.meta.env.DEV) {
+        // Init stats in development mode
+        // Check both Vite (import.meta.env.DEV) and Node (process.env.NODE_ENV) environments
+        const isDev = (typeof process !== 'undefined' && process.env?.NODE_ENV === 'development') ||
+                      // @ts-ignore - import.meta.env is provided by Vite at build time
+                      (typeof __VITE_IS_MODERN__ !== 'undefined');
+
+        if (isDev) {
             this.initStats();
         }
     }

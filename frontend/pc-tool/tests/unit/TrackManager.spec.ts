@@ -269,8 +269,7 @@ describe('TrackManager', () => {
 
       expect(editor.cmdManager.withGroup).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        expect.stringContaining('target track'),
-        expect.stringContaining('not found'),
+        expect.stringContaining('target track track-2 not found'),
       );
 
       consoleErrorSpy.mockRestore();
@@ -373,10 +372,13 @@ describe('TrackManager', () => {
         trackName: 'track_5',
       });
 
+      // Spy on setDataByTrackId to verify it's called correctly
+      const setDataSpy = jest.spyOn(trackManager, 'setDataByTrackId');
+
       trackManager.mergeTrackObject('track-1', 'track-2');
 
       // setDataByTrackId should only update existing objects
-      expect(trackManager.setDataByTrackId).toHaveBeenCalledWith('track-1', {
+      expect(setDataSpy).toHaveBeenCalledWith('track-1', {
         userData: {
           trackName: 'track_5',
           trackId: 'track-2',
@@ -385,6 +387,8 @@ describe('TrackManager', () => {
 
       // It should NOT create new objects for gaps
       // (This is implicitly tested - setDataByTrackId only updates existing objects)
+
+      setDataSpy.mockRestore();
     });
   });
 });

@@ -187,7 +187,7 @@ describe('CmdGroup', () => {
       // This is a conceptual test - the actual state is managed by the commands
       // The correct undo order prevents this issue
 
-      const trackState = {
+      const trackState: Record<string, { trackId: string; trackName: string } | undefined> = {
         'track-1': { trackId: 'track-1', trackName: 'track_10' },
         'track-2': { trackId: 'track-2', trackName: 'track_5' },
       };

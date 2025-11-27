@@ -34,7 +34,7 @@ export default class UpdateObjectUserData extends CmdBase<
             objects.forEach((object, index) => {
                 // let newData = Array.isArray(data) ? data : data[index];
                 let copeData = utils.pickAttrs(object.userData, attrKeys) as IUserData;
-                undoData.data.push(copeData);
+                (undoData.data as IUserData[]).push(copeData);
             });
 
             this.undoData = undoData;
